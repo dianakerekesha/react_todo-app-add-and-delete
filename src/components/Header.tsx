@@ -1,28 +1,43 @@
 import React, { useEffect, useState } from 'react';
+import { ERRORS } from '../utils/errors';
 interface Props {
-  onAdd: (title: string) => Promise<void>;
+  onAdd: (title: string) => Promise<boolean>;
   isSubmitting: boolean;
+  onError?: (message: string) => void;
   inputRef: React.RefObject<HTMLInputElement>;
 }
-export const Header: React.FC<Props> = ({ onAdd, isSubmitting, inputRef }) => {
+export const Header: React.FC<Props> = ({
+  onAdd,
+  isSubmitting,
+  onError,
+  inputRef,
+}) => {
   const [currentTitle, setCurrentTitle] = useState('');
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, [inputRef]);
+  }, [isSubmitting, inputRef]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    const trimmedTitle = currentTitle.trim();
+
+    if (!trimmedTitle) {
+      onError?.(ERRORS.title);
+
+      return;
+    }
 
     if (isSubmitting) {
       return;
     }
 
-    try {
-      await onAdd(currentTitle);
+    const isSuccess = await onAdd(trimmedTitle);
 
+    if (isSuccess) {
       setCurrentTitle('');
-    } catch {}
+    }
   };
 
   return (

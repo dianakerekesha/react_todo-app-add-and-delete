@@ -25,21 +25,22 @@ export const App: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingIds, setLoadingIds] = useState<number[]>([]);
 
+  const todoInputRef = useRef<HTMLInputElement>(null);
+
   const showError = useCallback((message: string) => {
     setErrorMessage(message);
 
     setTimeout(() => setErrorMessage(''), 3000);
   }, []);
 
-  const todoInputRef = useRef<HTMLInputElement>(null);
-
   const addTodo = useCallback(
-    async (title: string) => {
+    async (title: string): Promise<boolean> => {
       const normalizedTitle = title.trim();
 
       if (!normalizedTitle) {
         showError(ERRORS.title);
-        throw new Error('Empty title');
+
+        return false;
       }
 
       setErrorMessage('');
@@ -61,10 +62,15 @@ export const App: React.FC = () => {
           completed: false,
         });
 
+        setErrorMessage('');
         setTodos(prev => [...prev, newTodo]);
+        setTempTodo(null);
+
+        return true;
       } catch {
         showError(ERRORS.add);
-        throw new Error('Failed to add');
+
+        return false;
       } finally {
         setTempTodo(null);
         setIsSubmitting(false);
@@ -94,6 +100,7 @@ export const App: React.FC = () => {
         showError(ERRORS.delete);
       } finally {
         setLoadingIds(prev => prev.filter(id => id !== todoId));
+        todoInputRef.current?.focus();
       }
     },
     [showError],
@@ -126,6 +133,7 @@ export const App: React.FC = () => {
         <Header
           onAdd={addTodo}
           isSubmitting={isSubmitting}
+          onError={showError}
           inputRef={todoInputRef}
         />
         {/* Hide list and footer if there are no todos */}

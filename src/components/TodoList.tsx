@@ -26,7 +26,10 @@ export const TodoList: React.FC<Props> = ({
         />
       ))}
 
-      {tempTodo && <TodoItem todo={tempTodo} isLoaderActive={true} />}
+      {tempTodo &&
+        !todos.some(
+          t => t.id === tempTodo.id || t.title === tempTodo.title,
+        ) && <TodoItem todo={tempTodo} isLoaderActive={true} />}
     </section>
   );
 };

@@ -33,6 +33,27 @@ export const App: React.FC = () => {
     setTimeout(() => setErrorMessage(''), 3000);
   }, []);
 
+  useEffect(() => {
+    todoService
+      .getTodos()
+      .then(setTodos)
+      .catch(() => showError(ERRORS.load));
+  }, [showError]);
+
+  // Compute visible todos based on the active filter
+  const visibleTodos = useMemo(() => {
+    return todos.filter(todo => {
+      switch (filter) {
+        case FilterStatus.Active:
+          return !todo.completed;
+        case FilterStatus.Completed:
+          return todo.completed;
+        default:
+          return true;
+      }
+    });
+  }, [todos, filter]);
+
   const addTodo = useCallback(
     async (title: string): Promise<boolean> => {
       const normalizedTitle = title.trim();
@@ -62,9 +83,7 @@ export const App: React.FC = () => {
           completed: false,
         });
 
-        setErrorMessage('');
         setTodos(prev => [...prev, newTodo]);
-        setTempTodo(null);
 
         return true;
       } catch {
@@ -79,13 +98,6 @@ export const App: React.FC = () => {
     },
     [showError],
   );
-
-  useEffect(() => {
-    todoService
-      .getTodos()
-      .then(setTodos)
-      .catch(() => showError(ERRORS.load));
-  }, [showError]);
 
   const onDeleteTodo = useCallback(
     async (todoId: number) => {
@@ -111,20 +123,6 @@ export const App: React.FC = () => {
 
     completedTodos.forEach(todo => onDeleteTodo(todo.id));
   };
-
-  // Compute visible todos based on the active filter
-  const visibleTodos = useMemo(() => {
-    return todos.filter(todo => {
-      switch (filter) {
-        case FilterStatus.Active:
-          return !todo.completed;
-        case FilterStatus.Completed:
-          return todo.completed;
-        default:
-          return true;
-      }
-    });
-  }, [todos, filter]);
 
   return (
     <div className="todoapp">

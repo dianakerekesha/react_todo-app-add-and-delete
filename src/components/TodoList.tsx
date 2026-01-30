@@ -15,6 +15,9 @@ export const TodoList: React.FC<Props> = ({
   onDelete,
   loadingIds,
 }) => {
+  const shouldShowTemp =
+    tempTodo && !todos.some(todo => todo.title === tempTodo.title);
+
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {todos.map(todo => (
@@ -22,14 +25,11 @@ export const TodoList: React.FC<Props> = ({
           key={todo.id}
           todo={todo}
           onDelete={onDelete}
-          isLoaderActive={loadingIds.includes(todo.id)}
+          isLoaderActive={loadingIds.includes(todo.id) || todo.id === 0}
         />
       ))}
 
-      {tempTodo &&
-        !todos.some(
-          t => t.id === tempTodo.id || t.title === tempTodo.title,
-        ) && <TodoItem todo={tempTodo} isLoaderActive={true} />}
+      {shouldShowTemp && <TodoItem todo={tempTodo} isLoaderActive={true} />}
     </section>
   );
 };
